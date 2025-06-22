@@ -1,19 +1,30 @@
 import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 
-export async function setupExpressionTracking() {
+export async function setupExpressionTracking(avatarImage) {
   const model = await faceLandmarksDetection.load(
     faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
   );
   
   const video = document.getElementById('localVideo');
-  const canvas = document.getElementById('localCanvas');
+  const canvas = document.getElementById('avatarCanvas');
   const ctx = canvas.getContext('2d');
-  
-  // Set canvas size
-  canvas.width = video.offsetWidth;
-  canvas.height = video.offsetHeight;
-  
-  // Track expressions at 60fps
+  const socket = io();
+
+  function drawWarpedAvatar(landmarks) {
+    // Advanced warping logic would go here
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(avatarImage, 0, 0, canvas.width, canvas.height);
+    
+    // Simple mouth open simulation
+    const mouthOpen = landmarks.lipsUpperOuter[0].y - landmarks.lipsLowerOuter[0].y;
+    if (mouthOpen > 10) {
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.ellipse(200, 200, 30, mouthOpen/2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
   async function detectExpressions() {
     const predictions = await model.estimateFaces({
       input: video,
@@ -22,15 +33,8 @@ export async function setupExpressionTracking() {
     });
     
     if (predictions.length > 0) {
-      // Extract key expression parameters
-      const expression = {
-        mouthOpen: calculateMouthOpenness(predictions[0]),
-        eyebrowRaise: calculateEyebrowRaise(predictions[0]),
-        // Add more parameters
-      };
-      
-      // Send to remote peer
-      socket.emit('expression', expression);
+      drawWarpedAvatar(predictions[0].scaledMesh);
+      socket.emit('expression-data', predictions[0].scaledMesh);
     }
     
     requestAnimationFrame(detectExpressions);
