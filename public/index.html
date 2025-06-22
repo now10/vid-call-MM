@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Expression Mirror Video Call</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    .video-container { display: flex; justify-content: center; gap: 20px; margin: 20px; }
+    video { width: 400px; height: 300px; background: #000; }
+    canvas { position: absolute; top: 0; left: 0; }
+    #remoteCanvas { transform: scaleX(-1); }
+  </style>
+</head>
+<body>
+  <h1>Real-Time Expression Mirroring</h1>
+  
+  <div class="video-container">
+    <div style="position: relative;">
+      <video id="localVideo" autoplay muted></video>
+      <canvas id="localCanvas"></canvas>
+    </div>
+    <div style="position: relative;">
+      <video id="remoteVideo" autoplay></video>
+      <canvas id="remoteCanvas"></canvas>
+    </div>
+  </div>
+
+  <button id="startBtn">Start Call</button>
+  <button id="endBtn" disabled>End Call</button>
+
+  <!-- TensorFlow.js for face tracking -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@0.0.3"></script>
+  
+  <script src="app.js" type="module"></script>
+</body>
+</html>
